@@ -9,21 +9,24 @@ describe('Query whitelisting middleware', () => {
   const invalidQuery = '{ lastName }'
 
   const validateFn = (queryHash) => new Promise((resolve) => resolve(queryHash === validQueryHash))
-  const request = supertest(app({ validateFn }));
 
-  it('allows a valid query', done => {
-    request
-      .post('/graphql')
-      .send({ query: validQuery })
-      .expect('{"data":{"firstName":"John"}}', done);
-  })
+  describe('Query whitelisting', () => {
+    const request = supertest(app({ validateFn }));
 
-  it('doesn\'t allow an invalid query', done => {
-    request
-      .post('/graphql')
-      .send({ query: invalidQuery })
-      .expect(401)
-      .expect('Unauthorized query', done);
+    it('allows a valid query', done => {
+      request
+        .post('/graphql')
+        .send({ query: validQuery })
+        .expect('{"data":{"firstName":"John"}}', done);
+    })
+
+    it('doesn\'t allow an invalid query', done => {
+      request
+        .post('/graphql')
+        .send({ query: invalidQuery })
+        .expect(401)
+        .expect('Unauthorized query', done);
+    })
   })
 
   describe('Query normalization', () => {
@@ -40,6 +43,37 @@ describe('Query whitelisting middleware', () => {
         expect(req.queryHash).to.equal(validQueryHash)
         expect(req.normalizedQuery).to.equal(normalizedQuery)
       })
+    })
+  })
+
+  describe('Bypass function', () => {
+    it('doesn\'t bypass the middleware if the bypass function is not provided', done => {
+      const request = supertest(app({ validateFn }));
+
+      request
+        .post('/graphql')
+        .send({ query: invalidQuery })
+        .expect(401)
+        .expect('Unauthorized query', done);
+    })
+
+    it('bypasses the middleware if the bypass function returns a truthy value', done => {
+      const request = supertest(app({ validateFn, bypassFn: () => true }));
+
+      request
+        .post('/graphql')
+        .send({ query: invalidQuery })
+        .expect('{"data":{"lastName":"Cook"}}', done);
+    })
+
+    it('doesn\'t bypass the middleware if the bypass function returns a falsey value', done => {
+      const request = supertest(app({ validateFn, bypassFn: () => false }));
+
+      request
+        .post('/graphql')
+        .send({ query: invalidQuery })
+        .expect(401)
+        .expect('Unauthorized query', done);
     })
   })
 })
