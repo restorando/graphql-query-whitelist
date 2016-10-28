@@ -10,7 +10,7 @@ By default, anyone can query any field of your GraphQL app, and if your schema s
 Example:
 
 ```
-{
+query RecursiveQuery {
   friends {
     username
     
