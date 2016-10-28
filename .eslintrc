@@ -1,0 +1,25 @@
+{
+  "parser": "babel-eslint",
+  "extends": ["standard"],
+  "plugins": ["mocha"],
+  "ecmaFeatures": {
+    "modules": true,
+    "experimentalObjectRestSpread": true
+  },
+  "env": {
+    "node": true,
+    "es6": true
+  },
+  "rules": {
+    "space-before-function-paren": [2, "never"],
+    "object-curly-spacing": [2, "always"],
+    "array-bracket-spacing": [2, "never"],
+    "no-console": 2,
+    "mocha/no-exclusive-tests": 2,
+    "mocha/no-global-tests": 2,
+    "mocha/no-hooks-for-single-case": 2,
+    "mocha/no-identical-title": 2,
+    "mocha/no-pending-tests": 2,
+    "mocha/no-skipped-tests": 2
+  }
+}
