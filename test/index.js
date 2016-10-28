@@ -1,7 +1,13 @@
 import supertest from 'supertest'
-import { expect } from 'chai'
+import chai from 'chai'
+import spies from 'chai-spies'
+
 import app from './app'
 import queryWhitelisting from '../lib'
+
+chai.use(spies)
+
+const { expect } = chai
 
 describe('Query whitelisting middleware', () => {
   const validQuery = '{ firstName }'
@@ -46,8 +52,8 @@ describe('Query whitelisting middleware', () => {
     })
   })
 
-  describe('Bypass function', () => {
-    it('doesn\'t bypass the middleware if the bypass function is not provided', done => {
+  describe('Skip validation function', () => {
+    it('doesn\'t skip the middleware if the skip function is not provided', done => {
       const request = supertest(app({ validateFn }));
 
       request
@@ -57,8 +63,8 @@ describe('Query whitelisting middleware', () => {
         .expect('Unauthorized query', done);
     })
 
-    it('bypasses the middleware if the bypass function returns a truthy value', done => {
-      const request = supertest(app({ validateFn, bypassFn: () => true }));
+    it('skips the middleware if the skip function returns a truthy value', done => {
+      const request = supertest(app({ validateFn, skipValidationFn: () => true }));
 
       request
         .post('/graphql')
@@ -66,14 +72,42 @@ describe('Query whitelisting middleware', () => {
         .expect('{"data":{"lastName":"Cook"}}', done);
     })
 
-    it('doesn\'t bypass the middleware if the bypass function returns a falsey value', done => {
-      const request = supertest(app({ validateFn, bypassFn: () => false }));
+    it('doesn\'t skip the middleware if the skip function returns a falsey value', done => {
+      const request = supertest(app({ validateFn, skipValidationFn: () => false }));
 
       request
         .post('/graphql')
         .send({ query: invalidQuery })
         .expect(401)
         .expect('Unauthorized query', done);
+    })
+  })
+
+  describe('Validation error function', () => {
+    it('calls the validation error function if the query is invalid', done => {
+      const spy = chai.spy()
+      const request = supertest(app({ validateFn, validationErrorFn: spy }));
+
+      request
+        .post('/graphql')
+        .send({ query: invalidQuery })
+        .expect(401, () => {
+          expect(spy).to.have.been.called()
+          done()
+        });
+    })
+
+    it('doesn\'t call the validation error function if the query is valid', done => {
+      const spy = chai.spy()
+      const request = supertest(app({ validateFn, validationErrorFn: spy }));
+
+      request
+        .post('/graphql')
+        .send({ query: validQuery })
+        .expect(401, () => {
+          expect(spy).to.not.have.been.called()
+          done()
+        });
     })
   })
 })
