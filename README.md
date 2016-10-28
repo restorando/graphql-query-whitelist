@@ -5,7 +5,7 @@ A simple GraphQL query whitelisting middleware for express
 
 One of the security concerns for a typical GraphQL app is that it lacks of a security mechanism out of the box.
 
-By default, anyone can query any field of your GraphQL app, and if your schema supports nested queries, someone could make a query that consumes all the resources of the server. 
+By default, anyone can query any field of your GraphQL app, and if your schema supports nested queries, a malicious attacker could make a query that consumes all the resources of the server.
 
 Example:
 
@@ -13,13 +13,13 @@ Example:
 query RecursiveQuery {
   friends {
     username
-    
-    friends { 
+
+    friends {
       username
-      
-      friends { 
+
+      friends {
         username
-        
+
         friends { ... }
       }
     }
@@ -50,6 +50,55 @@ const validateFn = (queryHash) => redis.sismember('query-whitelist', queryHash)
 
 app.use(bodyParser.json()) // body-parser must be included before including the query whitelisting middleware
 app.post('/graphql', queryWhitelisting({ validateFn }))
+```
+
+# Options
+
+### validateFn
+
+This property is mandatory and must be a function that receives the query hash and returns a promise that resolves with a boolean value.
+
+Example:
+
+```js
+const validQueryHashes = ['947lZUnKBKmjhPEOqdsIB0XVL0leG61cMeKR3HDxQK4=', 'GJEJeNmzrZEUZ1bYDiXoR4cFHGdRjTntkQYeY33ZmQ8=']
+
+const validateFn = (queryHash) => new Promise((resolve) => {
+  resolve(validQueryHashes.indexOf(queryHash) > -1)
+})
+
+app.post('/graphql', queryWhitelisting({ validateFn }))
+```
+
+### skipValidationFn
+
+This property is optional and must be a function that receives the `express` request object and returns a boolean value. If a truthy value is returned, the whitelist check is skipped and the query is executed.
+
+This option is very useful to skip the whitelist check for certains apps that are already sending dynamic queries that are imposible to add to the whitelist.
+
+Example:
+
+```js
+const skipValidationFn = (req) => req.get('X-App-Version') <> 'legacy-app-1.0'
+
+app.post('/graphql', queryWhitelisting({ validateFn, skipValidationFn }))
+```
+
+### validationErrorFn
+
+This property is optional and must be a function that receives the express request object and will be called for every query that is prevented to be executed by this middleware.
+
+Example:
+
+```js
+import { verbose, warn } from 'utils/log'
+
+const validationErrorFn = (req) => {
+  warn(`Query '${req.queryHash}' is not in the whitelist`)
+  verbose(`Unauthorized query: ${req.normalizedQuery}`)
+}
+
+app.post('/graphql', queryWhitelisting({ validateFn, validationErrorFn }))
 ```
 
 ## License
