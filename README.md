@@ -74,7 +74,7 @@ app.post('/graphql', queryWhitelisting({ validateFn }))
 
 This property is optional and must be a function that receives the `express` request object and returns a boolean value. If a truthy value is returned, the whitelist check is skipped and the query is executed.
 
-This option is very useful to skip the whitelist check for certains apps that are already sending dynamic queries that are imposible to add to the whitelist.
+This option is very useful to skip the whitelist check for certain apps that are already sending dynamic queries that are impossible to add to the whitelist.
 
 Example:
 

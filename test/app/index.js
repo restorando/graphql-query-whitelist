@@ -10,5 +10,5 @@ export default (whitelistFn) => {
   app.use(bodyParser.json())
   app.use('/graphql', queryWhitelisting(whitelistFn), (req, res) => graphqlHTTP({ schema })(req, res))
 
-  return app;
+  return app
 }
