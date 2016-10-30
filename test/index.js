@@ -4,21 +4,29 @@ import spies from 'chai-spies'
 
 import app from './app'
 import queryWhitelisting from '../lib'
+import { MemoryStore } from '../lib/store'
+import { QueryRepository } from '../lib/utils'
 
 chai.use(spies)
 
 const { expect } = chai
 
 describe('Query whitelisting middleware', () => {
-  const validQuery = '{ firstName }'
-  const validQueryHash = 'FJJ3cIcLjvOBIyw6Q7jQpl1IIDPIeNPnakYVHM35orY='
-  const invalidQuery = '{ lastName }'
+  const validQuery = 'query ValidQuery { firstName }'
+  const validQueryId = 'Hwf+pzIq09drbuQSzDSAXEwuk9HfwrGKw7yFzd1buNM='
+  const invalidQuery = 'query InvalidQuery { lastName }'
+  const unauthorizedError = '{"error":"Unauthorized query"}'
 
-  const validateFn = (queryHash) => new Promise((resolve) => resolve(queryHash === validQueryHash))
+  let store, repository, request
+
+  beforeEach(async () => {
+    store = new MemoryStore()
+    repository = new QueryRepository(store)
+    await repository.put(validQuery)
+    request = supertest(app({ store }))
+  })
 
   describe('Query whitelisting', () => {
-    const request = supertest(app({ validateFn }))
-
     it('allows a valid query', done => {
       request
         .post('/graphql')
@@ -31,22 +39,37 @@ describe('Query whitelisting middleware', () => {
         .post('/graphql')
         .send({ query: invalidQuery })
         .expect(401)
-        .expect('Unauthorized query', done)
+        .expect(unauthorizedError, done)
+    })
+
+    it('allows to send only the queryId using a body parameter', done => {
+      request
+        .post('/graphql')
+        .send({ queryId: validQueryId })
+        .expect('{"data":{"firstName":"John"}}', done)
+    })
+
+    it('allows to send only the queryId using a query parameter', done => {
+      request
+        .post('/graphql')
+        .query({ queryId: validQueryId })
+        .expect('{"data":{"firstName":"John"}}', done)
     })
   })
 
   describe('Query normalization', () => {
-    [validQuery, '\n{\n\nfirstName\n\n          }'].forEach((query) => {
-      it(`adds the queryHash and the normalizedQuery attributes to the req object`, async () => {
-        const req = { body: { query } }
+    [validQuery, 'query ValidQuery \n{\n\nfirstName\n\n          }'].forEach((query) => {
+      it(`adds the QueryId and the normalizedQuery attributes to the req object`, async () => {
+        const req = { body: { query }, query: {} }
         const res = {}
         const next = () => {}
 
-        const normalizedQuery = '{\n  firstName\n}\n'
+        const normalizedQuery = 'query ValidQuery {\n  firstName\n}\n'
 
-        await queryWhitelisting({ validateFn })(req, res, next)
+        await queryWhitelisting({ store })(req, res, next)
 
-        expect(req.queryHash).to.equal(validQueryHash)
+        expect(req.queryId).to.equal(validQueryId)
+        expect(req.body.query).to.equal(normalizedQuery)
         expect(req.normalizedQuery).to.equal(normalizedQuery)
       })
     })
@@ -54,17 +77,17 @@ describe('Query whitelisting middleware', () => {
 
   describe('Skip validation function', () => {
     it('doesn\'t skip the middleware if the skip function is not provided', done => {
-      const request = supertest(app({ validateFn }))
+      const request = supertest(app({ store }))
 
       request
         .post('/graphql')
         .send({ query: invalidQuery })
         .expect(401)
-        .expect('Unauthorized query', done)
+        .expect(unauthorizedError, done)
     })
 
     it('skips the middleware if the skip function returns a truthy value', done => {
-      const request = supertest(app({ validateFn, skipValidationFn: () => true }))
+      const request = supertest(app({ store, skipValidationFn: () => true }))
 
       request
         .post('/graphql')
@@ -73,20 +96,20 @@ describe('Query whitelisting middleware', () => {
     })
 
     it('doesn\'t skip the middleware if the skip function returns a falsey value', done => {
-      const request = supertest(app({ validateFn, skipValidationFn: () => false }))
+      const request = supertest(app({ store, skipValidationFn: () => false }))
 
       request
         .post('/graphql')
         .send({ query: invalidQuery })
         .expect(401)
-        .expect('Unauthorized query', done)
+        .expect(unauthorizedError, done)
     })
   })
 
   describe('Validation error function', () => {
     it('calls the validation error function if the query is invalid', done => {
       const spy = chai.spy()
-      const request = supertest(app({ validateFn, validationErrorFn: spy }))
+      const request = supertest(app({ store, validationErrorFn: spy }))
 
       request
         .post('/graphql')
@@ -99,7 +122,7 @@ describe('Query whitelisting middleware', () => {
 
     it('doesn\'t call the validation error function if the query is valid', done => {
       const spy = chai.spy()
-      const request = supertest(app({ validateFn, validationErrorFn: spy }))
+      const request = supertest(app({ store, validationErrorFn: spy }))
 
       request
         .post('/graphql')

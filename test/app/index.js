@@ -4,11 +4,11 @@ import bodyParser from 'body-parser'
 import schema from './schema'
 import queryWhitelisting from '../../lib'
 
-export default (whitelistFn) => {
+export default (options) => {
   const app = express()
 
   app.use(bodyParser.json())
-  app.use('/graphql', queryWhitelisting(whitelistFn), (req, res) => graphqlHTTP({ schema })(req, res))
+  app.use('/graphql', queryWhitelisting(options), (req, res) => graphqlHTTP({ schema })(req, res))
 
   return app
 }
