@@ -79,7 +79,7 @@ This option is very useful to skip the whitelist check for certain apps that are
 Example:
 
 ```js
-const skipValidationFn = (req) => req.get('X-App-Version') <> 'legacy-app-1.0'
+const skipValidationFn = (req) => req.get('X-App-Version') !== 'legacy-app-1.0'
 
 app.post('/graphql', queryWhitelisting({ validateFn, skipValidationFn }))
 ```
