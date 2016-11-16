@@ -3,7 +3,7 @@ import chai from 'chai'
 import spies from 'chai-spies'
 
 import app from './app'
-import queryWhitelisting from '../lib'
+import graphqlWhitelist from '../lib'
 import { MemoryStore } from '../lib/store'
 import { QueryRepository } from '../lib/utils'
 
@@ -15,7 +15,7 @@ describe('Query whitelisting middleware', () => {
   const validQuery = 'query ValidQuery { firstName }'
   const validQueryId = 'Hwf+pzIq09drbuQSzDSAXEwuk9HfwrGKw7yFzd1buNM='
   const invalidQuery = 'query InvalidQuery { lastName }'
-  const unauthorizedError = '{"error":"Unauthorized query"}'
+  const unauthorizedError = { error: 'Unauthorized query' }
 
   let store, repository, request
 
@@ -31,29 +31,28 @@ describe('Query whitelisting middleware', () => {
       request
         .post('/graphql')
         .send({ query: validQuery })
-        .expect('{"data":{"firstName":"John"}}', done)
+        .expect({ data: { firstName: 'John' } }, done)
     })
 
     it('doesn\'t allow an invalid query', done => {
       request
         .post('/graphql')
         .send({ query: invalidQuery })
-        .expect(401)
-        .expect(unauthorizedError, done)
+        .expect(401, unauthorizedError, done)
     })
 
     it('allows to send only the queryId using a body parameter', done => {
       request
         .post('/graphql')
         .send({ queryId: validQueryId })
-        .expect('{"data":{"firstName":"John"}}', done)
+        .expect({ data: { firstName: 'John' } }, done)
     })
 
     it('allows to send only the queryId using a query parameter', done => {
       request
         .post('/graphql')
         .query({ queryId: validQueryId })
-        .expect('{"data":{"firstName":"John"}}', done)
+        .expect({ data: { firstName: 'John' } }, done)
     })
   })
 
@@ -66,7 +65,7 @@ describe('Query whitelisting middleware', () => {
 
         const normalizedQuery = 'query ValidQuery {\n  firstName\n}\n'
 
-        await queryWhitelisting({ store })(req, res, next)
+        await graphqlWhitelist({ store })(req, res, next)
 
         expect(req.queryId).to.equal(validQueryId)
         expect(req.body.query).to.equal(normalizedQuery)
@@ -92,7 +91,7 @@ describe('Query whitelisting middleware', () => {
       request
         .post('/graphql')
         .send({ query: invalidQuery })
-        .expect('{"data":{"lastName":"Cook"}}', done)
+        .expect({ data: { lastName: 'Cook' } }, done)
     })
 
     it('doesn\'t skip the middleware if the skip function returns a falsey value', done => {

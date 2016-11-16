@@ -12,14 +12,29 @@ describe('MemoryStore', () => {
   it('puts a query into the store', async () => {
     expect(store.queries.has(queryHash)).to.be.false
 
-    await store.put(queryHash, query)
+    await store.set(queryHash, query)
 
     expect(store.queries.has(queryHash)).to.be.true
   })
 
   it('gets a query from the store', async () => {
-    store.put(queryHash, query)
+    await store.set(queryHash, query)
 
     expect(await store.get(queryHash)).to.equal(query)
+  })
+
+  it('gets all the entries', async () => {
+    await Promise.all([store.set('foo', 'bar'), store.set('foo2', 'bar2')])
+    expect(await store.entries()).to.deep.include.members([['foo', 'bar'], ['foo2', 'bar2']])
+  })
+
+  it('deletes an entry', async () => {
+    await store.set(queryHash, query)
+
+    expect(await store.get(queryHash)).to.equal(query)
+
+    await store.delete(queryHash)
+
+    expect(await store.get(queryHash)).to.be.undefined
   })
 })

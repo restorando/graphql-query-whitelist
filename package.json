@@ -1,7 +1,7 @@
 {
-  "name": "graphql-query-whitelisting",
+  "name": "graphql-query-whitelist",
   "version": "0.2.0",
-  "description": "A very simple GraphQL query whitelisting middleware for express",
+  "description": "A very simple GraphQL query whitelist middleware for express",
   "main": "./dist/index.js",
   "scripts": {
     "lint": "eslint .",
@@ -12,7 +12,8 @@
   "author": "Gabriel Schammah <gabriel@restorando.com>",
   "license": "MIT",
   "peerDependencies": {
-    "graphql": "0.x"
+    "graphql": "0.x",
+    "body-parser": "1.x"
   },
   "optionalDependencies": {
     "ioredis": "2.x"
@@ -39,5 +40,5 @@
     "mocha": "^3.1.2",
     "supertest": "^2.0.1"
   },
-  "repository": "https://www.github.com/restorando/graphql-query-whitelisting"
+  "repository": "https://www.github.com/restorando/graphql-query-whitelist"
 }
