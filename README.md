@@ -1,9 +1,9 @@
 # graphql-query-whitelist
-A simple GraphQL query whitelist toolkit for express.
+A simple GraphQL query whitelist toolkit for `express`.
 
 It includes:
 
-* An express middleware that prevents queries not in the whitelist to be executed. It also allows to execute queries just passing the queryId instead of the full query
+* An `express` middleware that prevents queries not in the whitelist to be executed. It also allows to execute queries just passing a previously stored queryId instead of the full query.
 * A REST API to create/get/list/enable/disable/delete queries from the whitelist
 * A `MemoryStore` and `RedisStore` to store the queries
 * An utility class (`QueryRepository`) to perform CRUD operations programatically
@@ -59,9 +59,9 @@ app.post('/graphql', graphqlWhitelist({ store }))
 Before each request is processed by GraphQL, it will check if the inbound query is in the whitelist or not.
 If it's not in the whitelist, it will respond with a 401 status code.
 
-# Running queries only sending the queryId
+# Running queries only sending the `queryId`
 
-Since the server has access to the query store, and the store has access to the full queries, it's possible to run a query just sending the queryId.
+Since the server has access to the query store, and the store has access to the full queries, it's possible to run a query just by sending the queryId.
 
 E.g: `POST /graphql?queryId=dSPDigYWUw2w9wTI9g0RrbakmsJiRFIvTUa59jnZsV4=`
 
@@ -73,7 +73,7 @@ There are 2 ways of storing and retrieving queries:
 
 Normally you would want to automate the process of storing queries at the build time.
 
-This library includes a Rest API that you can mount in any express app to list, create, get, enable/disable and delete queries.
+This library includes a Rest API that you can mount in any `express` app to list, create, get, enable/disable and delete queries.
 
 Example:
 
@@ -82,7 +82,7 @@ import { Api as whitelistAPI, RedisStore } from 'graphql-query-whitelist'
 app.use('/whitelist', whitelistAPI(new RedisStore()))
 ```
 
-Will allow you to access to these routes:
+It will mount these routes:
 
 ```
 GET /whitelist/queries
@@ -92,7 +92,7 @@ PUT /whitelist/queries/:id
 DELETE /whitelist/queries/:id
 ```
 
-## Programatically using the QueryRepository
+## Programatically using the `QueryRepository`
 
 Example:
 
@@ -182,7 +182,7 @@ app.post('/graphql', graphqlWhitelist({ store, skipValidationFn }))
 
 ### validationErrorFn
 
-This property is optional and must be a function that receives the express request object and will be called for every query that is prevented to be executed by this middleware.
+This property is optional and must be a function that receives the `express` request object and will be called for every query that is prevented to be executed by this middleware.
 
 Example:
 
