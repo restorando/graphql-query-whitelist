@@ -48,34 +48,9 @@ const store = new MemoryStore()
 app.use(bodyParser.json())
 app.post('/graphql', graphqlWhitelist({ store }))
 ```
-# Stores
 
-A store is the medium to list, get, store and delete queries.
-
-It must implement the following methods:
-
-##### get(key)
-It returns a Promise that resolves to the value for that key
-
-#### set(key, value)
-returns a Promise that is resolved after the value is saved in the store
-
-#### entries()
-returns a Promise that resolves to an array of all the entries stored, having the following format:
-`[[key1, val1], [key2, val2], ...]`
-
-#### delete(key)
-returns a Promise that is resolved after the element is deleted from the store
-
-#### clear()
-returns a Promise that is resolved after all the elements are deleted from the store
-
-Including in this library are 2 stores:
-
-* MemoryStore
-* RedisStore (needs to have [ioredis](https://github.com/luin/ioredis) installed)
-
-The `RedisStore` receives the [same constructor arguments as ioredis](https://github.com/luin/ioredis#connect-to-redis).
+Before each request is processed by GraphQL, it will check if the inbound query is in the whitelist or not.
+If it's not in the whitelist, it will respond with a 401 status code.
 
 # Storing and retrievieng queries
 
@@ -142,6 +117,35 @@ The `QueryRepository` class exposes the following methods:
 * update(queryId, properties)
 * entries()
 * delete(queryId)
+
+# Stores
+
+A store is the medium to list, get, store and delete queries.
+
+It must implement the following methods:
+
+##### get(key)
+It returns a Promise that resolves to the value for that key
+
+#### set(key, value)
+returns a Promise that is resolved after the value is saved in the store
+
+#### entries()
+returns a Promise that resolves to an array of all the entries stored, having the following format:
+`[[key1, val1], [key2, val2], ...]`
+
+#### delete(key)
+returns a Promise that is resolved after the element is deleted from the store
+
+#### clear()
+returns a Promise that is resolved after all the elements are deleted from the store
+
+Including in this library are 2 stores:
+
+* MemoryStore
+* RedisStore (needs to have [ioredis](https://github.com/luin/ioredis) installed)
+
+The `RedisStore` receives the [same constructor arguments as ioredis](https://github.com/luin/ioredis#connect-to-redis).
 
 # Middleware Options
 
