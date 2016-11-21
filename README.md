@@ -65,9 +65,9 @@ Since the server has access to the query store, and the store has access to the 
 
 E.g: `POST /graphql?queryId=dSPDigYWUw2w9wTI9g0RrbakmsJiRFIvTUa59jnZsV4=`
 
-# Storing and retrievieng queries
+# Storing and retrieving queries
 
-There are 2 ways of storing and retrieving queries
+There are 2 ways of storing and retrieving queries:
 
 ### Rest API
 
@@ -120,16 +120,16 @@ repository.put(query).then(console.log)
  *   operationName: 'MyQuery',
  *   enabled: true
  *  }
-/*
+ */
 ```
 
 The `QueryRepository` class exposes the following methods:
 
-* get(queryId)
-* put(query)
-* update(queryId, properties)
-* entries()
-* delete(queryId)
+* `get(queryId)`
+* `put(query)`
+* `update(queryId, properties)`
+* `entries()`
+* `delete(queryId)`
 
 # Stores
 
@@ -137,26 +137,26 @@ A store is the medium to list, get, store and delete queries.
 
 It must implement the following methods:
 
-##### get(key)
-It returns a Promise that resolves to the value for that key
+##### `get(key)`
+It returns a `Promise` that resolves to the value for that key
 
-#### set(key, value)
-returns a Promise that is resolved after the value is saved in the store
+#### `set(key, value)`
+Returns a `Promise` that is resolved after the value is saved in the store
 
-#### entries()
-returns a Promise that resolves to an array of all the entries stored, having the following format:
+#### `entries()`
+Returns a `Promise` that resolves to an array of all the entries stored, having the following format:
 `[[key1, val1], [key2, val2], ...]`
 
-#### delete(key)
-returns a Promise that is resolved after the element is deleted from the store
+#### `delete(key)`
+Returns a `Promise` that is resolved after the element is deleted from the store
 
-#### clear()
-returns a Promise that is resolved after all the elements are deleted from the store
+#### `clear()`
+Returns a `Promise` that is resolved after all the elements are deleted from the store
 
 Including in this library are 2 stores:
 
-* MemoryStore
-* RedisStore (needs to have [ioredis](https://github.com/luin/ioredis) installed)
+* `MemoryStore`
+* `RedisStore` (needs to have [ioredis](https://github.com/luin/ioredis) installed)
 
 The `RedisStore` receives the [same constructor arguments as ioredis](https://github.com/luin/ioredis#connect-to-redis).
 
