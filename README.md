@@ -1,5 +1,12 @@
 # graphql-query-whitelist
-A simple GraphQL query whitelist middleware and API for express
+A simple GraphQL query whitelist toolkit for express.
+
+It includes:
+
+* An express middleware that prevents queries not in the whitelist to be executed. It also allows to execute queries just passing the queryId instead of the full query
+* A REST API to create/get/list/enable/disable/delete queries from the whitelist
+* A `MemoryStore` and `RedisStore` to store the queries
+* An utility class (`QueryRepository`) to perform CRUD operations programatically
 
 # Rationale
 
@@ -51,6 +58,12 @@ app.post('/graphql', graphqlWhitelist({ store }))
 
 Before each request is processed by GraphQL, it will check if the inbound query is in the whitelist or not.
 If it's not in the whitelist, it will respond with a 401 status code.
+
+# Running queries only sending the queryId
+
+Since the server has access to the query store, and the store has access to the full queries, it's possible to run a query just sending the queryId.
+
+E.g: `POST /graphql?queryId=dSPDigYWUw2w9wTI9g0RrbakmsJiRFIvTUa59jnZsV4=`
 
 # Storing and retrievieng queries
 
