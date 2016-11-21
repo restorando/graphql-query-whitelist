@@ -1,5 +1,12 @@
-# graphql-query-whitelisting
-A simple GraphQL query whitelisting middleware for express
+# graphql-query-whitelist
+A simple GraphQL query whitelist toolkit for `express`.
+
+It includes:
+
+* An `express` middleware that prevents queries not in the whitelist to be executed. It also allows to execute queries just passing a previously stored queryId instead of the full query.
+* A REST API to create/get/list/enable/disable/delete queries from the whitelist
+* A `MemoryStore` and `RedisStore` to store the queries
+* An utility class (`QueryRepository`) to perform CRUD operations programatically
 
 # Rationale
 
@@ -33,42 +40,131 @@ This middleware avoids this type of queries checking if the incoming query is wh
 
 # Installation
 
-`npm install --save graphql-query-whitelisting`
+`npm install --save graphql-query-whitelist graphql body-parser`
 
 In your app:
 
 ```js
 import express from 'express'
 import bodyParser from 'body-parser'
-import Redis from 'ioredis'
+import graphqlWhitelist, { MemoryStore } from 'graphql-query-whitelist'
 
 const app = express()
-const redis = new Redis()
-
-// This function must return a Promise that resolves with a truthy value if the query is valid.
-const validateFn = (queryHash) => redis.sismember('query-whitelist', queryHash)
-
-app.use(bodyParser.json()) // body-parser must be included before including the query whitelisting middleware
-app.post('/graphql', queryWhitelisting({ validateFn }))
+const store = new MemoryStore()
+// body-parser must be included before including the query whitelist middleware
+app.use(bodyParser.json())
+app.post('/graphql', graphqlWhitelist({ store }))
 ```
 
-# Options
+Before each request is processed by GraphQL, it will check if the inbound query is in the whitelist or not.
+If it's not in the whitelist, it will respond with a 401 status code.
 
-### validateFn
+# Running queries only sending the `queryId`
 
-This property is mandatory and must be a function that receives the query hash and returns a promise that resolves with a boolean value.
+Since the server has access to the query store, and the store has access to the full queries, it's possible to run a query just by sending the queryId.
+
+E.g: `POST /graphql?queryId=dSPDigYWUw2w9wTI9g0RrbakmsJiRFIvTUa59jnZsV4=`
+
+# Storing and retrieving queries
+
+There are 2 ways of storing and retrieving queries:
+
+### Rest API
+
+Normally you would want to automate the process of storing queries at the build time.
+
+This library includes a Rest API that you can mount in any `express` app to list, create, get, enable/disable and delete queries.
 
 Example:
 
 ```js
-const validQueryHashes = ['947lZUnKBKmjhPEOqdsIB0XVL0leG61cMeKR3HDxQK4=', 'GJEJeNmzrZEUZ1bYDiXoR4cFHGdRjTntkQYeY33ZmQ8=']
-
-const validateFn = (queryHash) => new Promise((resolve) => {
-  resolve(validQueryHashes.indexOf(queryHash) > -1)
-})
-
-app.post('/graphql', queryWhitelisting({ validateFn }))
+import { Api as whitelistAPI, RedisStore } from 'graphql-query-whitelist'
+app.use('/whitelist', whitelistAPI(new RedisStore()))
 ```
+
+It will mount these routes:
+
+```
+GET /whitelist/queries
+GET /whitelist/queries/:id
+POST /whitelist/queries
+PUT /whitelist/queries/:id
+DELETE /whitelist/queries/:id
+```
+
+## Programatically using the `QueryRepository`
+
+Example:
+
+```js
+import { QueryRepository, MemoryStore } from 'graphql-query-whitelist'
+
+const store = new MemoryStore()
+const repository = new QueryRepository(store)
+
+const query = `
+  query MyQuery {
+    users {
+      firstName
+    }
+  }
+`
+
+repository.put(query).then(console.log)
+
+/*
+ * Prints:
+ * {
+ *   id: 'dSPDigYWUw2w9wTI9g0RrbakmsJiRFIvTUa59jnZsV4=',
+ *   query: 'query MyQuery {\n  users {\n    firstName\n  }\n}\n',
+ *   operationName: 'MyQuery',
+ *   enabled: true
+ *  }
+ */
+```
+
+The `QueryRepository` class exposes the following methods:
+
+* `get(queryId)`
+* `put(query)`
+* `update(queryId, properties)`
+* `entries()`
+* `delete(queryId)`
+
+# Stores
+
+A store is the medium to list, get, store and delete queries.
+
+It must implement the following methods:
+
+##### `get(key)`
+It returns a `Promise` that resolves to the value for that key
+
+#### `set(key, value)`
+Returns a `Promise` that is resolved after the value is saved in the store
+
+#### `entries()`
+Returns a `Promise` that resolves to an array of all the entries stored, having the following format:
+`[[key1, val1], [key2, val2], ...]`
+
+#### `delete(key)`
+Returns a `Promise` that is resolved after the element is deleted from the store
+
+#### `clear()`
+Returns a `Promise` that is resolved after all the elements are deleted from the store
+
+Including in this library are 2 stores:
+
+* `MemoryStore`
+* `RedisStore` (needs to have [ioredis](https://github.com/luin/ioredis) installed)
+
+The `RedisStore` receives the [same constructor arguments as ioredis](https://github.com/luin/ioredis#connect-to-redis).
+
+# Middleware Options
+
+### store
+
+This property is mandatory and must be a valid query store.
 
 ### skipValidationFn
 
@@ -81,12 +177,12 @@ Example:
 ```js
 const skipValidationFn = (req) => req.get('X-App-Version') !== 'legacy-app-1.0'
 
-app.post('/graphql', queryWhitelisting({ validateFn, skipValidationFn }))
+app.post('/graphql', graphqlWhitelist({ store, skipValidationFn }))
 ```
 
 ### validationErrorFn
 
-This property is optional and must be a function that receives the express request object and will be called for every query that is prevented to be executed by this middleware.
+This property is optional and must be a function that receives the `express` request object and will be called for every query that is prevented to be executed by this middleware.
 
 Example:
 
@@ -94,11 +190,11 @@ Example:
 import { verbose, warn } from 'utils/log'
 
 const validationErrorFn = (req) => {
-  warn(`Query '${req.queryHash}' is not in the whitelist`)
+  warn(`Query '${req.queryId}' is not in the whitelist`)
   verbose(`Unauthorized query: ${req.normalizedQuery}`)
 }
 
-app.post('/graphql', queryWhitelisting({ validateFn, validationErrorFn }))
+app.post('/graphql', graphqlWhitelist({ store, validationErrorFn }))
 ```
 
 ## License
