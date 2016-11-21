@@ -1,6 +1,6 @@
 {
   "name": "graphql-query-whitelist",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A very simple GraphQL query whitelist middleware for express",
   "main": "./dist/index.js",
   "scripts": {
@@ -40,5 +40,8 @@
     "mocha": "^3.1.2",
     "supertest": "^2.0.1"
   },
-  "repository": "https://www.github.com/restorando/graphql-query-whitelist"
+  "repository": "https://www.github.com/restorando/graphql-query-whitelist",
+  "dependencies": {
+    "babel-polyfill": "^6.16.0"
+  }
 }
