@@ -75,6 +75,8 @@ Including in this library are 2 stores:
 * MemoryStore
 * RedisStore (needs to have [ioredis](https://github.com/luin/ioredis) installed)
 
+The `RedisStore` receives the [same constructor arguments as ioredis](https://github.com/luin/ioredis#connect-to-redis).
+
 # Storing and retrievieng queries
 
 There are 2 ways of storing and retrieving queries
@@ -120,7 +122,8 @@ const query = `
   }
 `
 
-repository.put(query).then((queryObj) => console.log(queryObj))
+repository.put(query).then(console.log)
+
 /*
  * Prints:
  * {
@@ -170,7 +173,7 @@ Example:
 import { verbose, warn } from 'utils/log'
 
 const validationErrorFn = (req) => {
-  warn(`Query '${req.queryHash}' is not in the whitelist`)
+  warn(`Query '${req.queryId}' is not in the whitelist`)
   verbose(`Unauthorized query: ${req.normalizedQuery}`)
 }
 
