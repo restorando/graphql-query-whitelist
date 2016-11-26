@@ -197,6 +197,18 @@ const validationErrorFn = (req) => {
 app.post('/graphql', graphqlWhitelist({ store, validationErrorFn }))
 ```
 
+### storeIntrospectionQueries
+
+If this option is set to true, `graphql-query-whitelist` will add to the whitelist all GraphQL and GraphiQL introspection queries.
+
+This option is disabled by default, but is needed if you are using GraphiQL and need to have the introspection queries whitelisted in order to have the autocompletion feature working.
+
+Example:
+
+```js
+app.post('/graphql', graphqlWhitelist({ store, storeIntrospectionQueries: true }))
+```
+
 ## License
 
 Copyright (c) 2016 Restorando
