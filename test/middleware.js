@@ -15,7 +15,7 @@ describe('Query whitelisting middleware', () => {
   const validQuery = 'query ValidQuery { firstName }'
   const validQueryId = 'Hwf+pzIq09drbuQSzDSAXEwuk9HfwrGKw7yFzd1buNM='
   const invalidQuery = 'query InvalidQuery { lastName }'
-  const unauthorizedError = { error: 'Unauthorized query' }
+  const unauthorizedError = { errors: [{ message: 'Unauthorized query' }] }
 
   let store, repository, request
 

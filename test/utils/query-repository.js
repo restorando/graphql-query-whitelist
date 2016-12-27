@@ -26,6 +26,18 @@ describe('QueryRepository', () => {
     expect(store.queries.get(queryId)).to.deep.equal(expectedQuery)
   })
 
+  it('overrides the operation name', async () => {
+    expect(store.queries.has(queryId)).to.be.false
+
+    await repo.put(query, { operationName: 'foo' })
+
+    expect(store.queries.get(queryId)).to.deep.equal({
+      enabled: true,
+      operationName: 'foo',
+      query: 'query TestQuery {\n  firstName\n}\n'
+    })
+  })
+
   it('gets a query from the store', async () => {
     await repo.put(query)
 
