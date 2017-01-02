@@ -68,8 +68,8 @@ describe('Query whitelisting middleware', () => {
         await graphqlWhitelist({ store })(req, res, next)
 
         expect(req.queryId).to.equal(validQueryId)
+        expect(req.operationName).to.equal('ValidQuery')
         expect(req.body.query).to.equal(normalizedQuery)
-        expect(req.normalizedQuery).to.equal(normalizedQuery)
       })
     })
   })
