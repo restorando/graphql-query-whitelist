@@ -190,8 +190,8 @@ Example:
 import { verbose, warn } from 'utils/log'
 
 const validationErrorFn = (req) => {
-  warn(`Query '${req.queryId}' is not in the whitelist`)
-  verbose(`Unauthorized query: ${req.normalizedQuery}`)
+  warn(`Query '${req.operationName} (${req.queryId})' is not in the whitelist`)
+  verbose(`Unauthorized query: ${req.body.query}`)
 }
 
 app.post('/graphql', graphqlWhitelist({ store, validationErrorFn }))
