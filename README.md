@@ -209,6 +209,19 @@ Example:
 app.post('/graphql', graphqlWhitelist({ store, storeIntrospectionQueries: true }))
 ```
 
+### dryRun
+
+If this option is set to true, `graphql-query-whitelist` will validate the query against the whitelist and the `validationErrorFn` will be called, but the query will be executed as if the middleware is disabled.
+
+This is useful if you are starting to whitelist the queries long after your GraphQL server was first launched, and you need to log all the queries that are not yet whitelisted.
+
+Example:
+
+```js
+app.post('/graphql', graphqlWhitelist({ store, dryRun: true }))
+```
+
+
 ## License
 
 Copyright (c) 2016 Restorando

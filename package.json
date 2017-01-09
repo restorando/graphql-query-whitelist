@@ -1,6 +1,6 @@
 {
   "name": "graphql-query-whitelist",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "A very simple GraphQL query whitelist middleware for express",
   "main": "./dist/index.js",
   "scripts": {

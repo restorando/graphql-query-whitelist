@@ -105,31 +105,49 @@ describe('Query whitelisting middleware', () => {
     })
   })
 
-  describe('Validation error function', () => {
-    it('calls the validation error function if the query is invalid', done => {
+  describe('Error validation function', () => {
+    it('calls the error validation function if the query is invalid', done => {
       const spy = chai.spy()
       const request = supertest(app({ store, validationErrorFn: spy }))
 
       request
         .post('/graphql')
         .send({ query: invalidQuery })
-        .expect(401, () => {
+        .expect(401, (err, res) => {
+          if (err) return done(err)
           expect(spy).to.have.been.called()
           done()
         })
     })
 
-    it('doesn\'t call the validation error function if the query is valid', done => {
+    it('doesn\'t call the error validation function if the query is valid', done => {
       const spy = chai.spy()
       const request = supertest(app({ store, validationErrorFn: spy }))
 
       request
         .post('/graphql')
         .send({ query: validQuery })
-        .expect(401, () => {
+        .expect(200, (err, res) => {
+          if (err) return done(err)
           expect(spy).to.not.have.been.called()
           done()
         })
+    })
+
+    describe('Dry run', () => {
+      it('calls the error validation function but skips the whitelisting', done => {
+        const spy = chai.spy()
+        const request = supertest(app({ store, validationErrorFn: spy, dryRun: true }))
+
+        request
+          .post('/graphql')
+          .send({ query: invalidQuery })
+          .expect(200, (err, res) => {
+            if (err) return done(err)
+            expect(spy).to.have.been.called()
+            done()
+          })
+      })
     })
   })
 })
