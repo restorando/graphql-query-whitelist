@@ -67,8 +67,8 @@ describe('Api', () => {
     it('updates an existing query', done => {
       request
         .put(`/api/queries/${existingQueryId}`)
-        .send({ enabled: false })
-        .expect({ ...fullQuery, enabled: false }, done)
+        .send({ enabled: false, operationName: 'foo' })
+        .expect({ ...fullQuery, enabled: false, operationName: 'foo' }, done)
     })
 
     it('returns a 404 if the query that needs to be updated does not exist', done => {
