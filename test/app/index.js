@@ -31,8 +31,11 @@ const schema = new GraphQLSchema({
 export default (options) => {
   const app = express()
 
-  app.use(bodyParser.json())
-  app.use('/graphql', graphqlWhitelist(options), (req, res) => graphqlHTTP({ schema })(req, res))
+  if (!options.noBodyParser) {
+    app.use(bodyParser.json())
+  }
+
+  app.use('/graphql', graphqlWhitelist(options), (req, res) => graphqlHTTP({ schema, graphiql: true })(req, res))
   app.use('/api', Api(options.store))
 
   return app

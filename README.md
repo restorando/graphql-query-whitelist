@@ -6,7 +6,7 @@ It includes:
 * An `express` middleware that prevents queries not in the whitelist to be executed. It also allows to execute queries just passing a previously stored queryId instead of the full query.
 * A REST API to create/get/list/enable/disable/delete queries from the whitelist
 * A `MemoryStore` and `RedisStore` to store the queries
-* An utility class (`QueryRepository`) to perform CRUD operations programatically
+* An utility class (`QueryRepository`) to perform CRUD operations programmatically
 
 # Rationale
 
@@ -92,7 +92,7 @@ PUT /whitelist/queries/:id
 DELETE /whitelist/queries/:id
 ```
 
-## Programatically using the `QueryRepository`
+## Programmatically using the `QueryRepository`
 
 Example:
 

@@ -27,6 +27,17 @@ describe('Query whitelisting middleware', () => {
   })
 
   describe('Query whitelisting', () => {
+    it('throws an error if body is not being parsed before by a middleware', done => {
+      supertest(app({ store, noBodyParser: true }))
+        .get('/graphql')
+        .query({ query: validQuery })
+        .expect(500, (err, res) => {
+          if (err) return done(err)
+          expect(res.error.text).to.include('body-parser middleware')
+          done()
+        })
+    })
+
     it('allows a valid query', done => {
       request
         .post('/graphql')
@@ -53,6 +64,26 @@ describe('Query whitelisting middleware', () => {
         .post('/graphql')
         .query({ queryId: validQueryId })
         .expect({ data: { firstName: 'John' } }, done)
+    })
+
+    it('skips the middleware for a GET if no query is being sent', done => {
+      request
+        .get('/graphql')
+        .expect(400, { errors: [{ message: 'Must provide query string.' }] }, done)
+    })
+
+    it('allows to query the schema via GET', done => {
+      request
+        .get('/graphql')
+        .query({ query: invalidQuery })
+        .expect(401, done)
+    })
+
+    it('allows to query the schema via GET using a queryId', done => {
+      request
+        .get('/graphql')
+        .query({ queryId: validQueryId })
+        .expect(200, { data: { firstName: 'John' } }, done)
     })
   })
 
