@@ -1,12 +1,15 @@
 {
   "name": "graphql-query-whitelist",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "A very simple GraphQL query whitelist middleware for express",
   "main": "./dist/index.js",
+  "bin": {
+    "gql-whitelist": "./dist/utils/gql-whitelist.js"
+  },
   "scripts": {
     "lint": "eslint .",
     "test": "NODE_ENV=test NODE_PATH=src mocha --timeout 1000 --compilers js:babel-core/register --require babel-polyfill ./test/*.js ./test/store/*.js ./test/utils/*.js",
-    "build": "babel lib --out-dir dist && mkdir -p dist/utils/queries && cp -vr lib/utils/queries dist/utils",
+    "build": "babel lib --out-dir dist && babel bin && mkdir -p dist/utils/queries && cp -vr lib/utils/queries dist/utils",
     "prepublish": "npm run build"
   },
   "author": "Gabriel Schammah <gabriel@restorando.com>",
@@ -43,6 +46,7 @@
   },
   "repository": "https://www.github.com/restorando/graphql-query-whitelist",
   "dependencies": {
-    "babel-runtime": "^6.18.0"
+    "babel-runtime": "^6.18.0",
+    "optimist": "^0.6.1"
   }
 }
