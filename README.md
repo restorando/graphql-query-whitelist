@@ -9,6 +9,8 @@ It includes:
 * An utility class (`QueryRepository`) to perform CRUD operations programmatically
 * A binary (`gql-whitelist`) that whitelist all the files with `.graphql` extension in a specified directory (useful to automatically whitelist queries on build time)
 
+A UI to manage the whitelisted queries is [available here](https://github.com/restorando/graphql-query-whitelist-ui)
+
 # Rationale
 
 One of the security concerns for a typical GraphQL app is that it lacks of a security mechanism out of the box.
