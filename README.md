@@ -3,10 +3,11 @@ A simple GraphQL query whitelist toolkit for `express`.
 
 It includes:
 
-* An `express` middleware that prevents queries not in the whitelist to be executed. It also allows to execute queries just passing a previously stored queryId instead of the full query.
+* An `express` middleware that prevents queries not in the whitelist to be executed. It also allows to execute queries just passing a previously stored `queryId` instead of the full query.
 * A REST API to create/get/list/enable/disable/delete queries from the whitelist
 * A `MemoryStore` and `RedisStore` to store the queries
 * An utility class (`QueryRepository`) to perform CRUD operations programmatically
+* A binary (`gql-whitelist`) that whitelist all the files with `.graphql` extension in a specified directory (useful to automatically whitelist queries on build time)
 
 # Rationale
 
@@ -221,6 +222,21 @@ Example:
 app.post('/graphql', graphqlWhitelist({ store, dryRun: true }))
 ```
 
+# Whitelisting queries automatically
+
+You may want to whitelist new queries everytime a query is added/changed in your project. This depends on `graphql` so make sure `graphql` is installed as well.
+
+```bash
+$ npm install -g graphql-query-whitelist graphql
+
+$ gql-whitelist --endpoint http://your.graphql-endpoint.com/graphql /path/to/directory/containing/.graphql/files
+```
+
+Additionally, you can specify headers using the option `--header`
+
+```bash
+$ gql-whitelist --endpoint http://your.graphql-endpoint.com/graphql --header key=value --header key2=value2 /path/to/directory/containing/.graphql/files
+```
 
 ## License
 
